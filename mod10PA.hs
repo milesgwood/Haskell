@@ -1,6 +1,11 @@
 -- mod10PA.hs -- Module 10 Haskell functions
 -- Miles Greatwood
 
+import Data.Function (on)
+import Data.List (sortBy)
+import Data.List (genericTake)
+
+
 -- A list of all factors of n.
 --The second version of this is a recursive function.
 factors :: Integral a => a -> [a]
@@ -40,26 +45,49 @@ perfectUpTo n
   | n < 6 = []
   | otherwise = [p | p<-[6..n], isPerfect p ]
 
+get3 :: (a,b,c) -> c
+get3 (_,_,c) = c
+
 -- A list of pythagorean triples.
 -- A triple (x,y,z) is pythagorean if x^2+y^s = z^2.
 --In this result, x <= y < z.
+--I had to write a cutsom function to get the third part of the tuple for ordering
 pythagoreans :: Integral a => a -> [(a,a,a)]
 pythagoreans n
   | n < 5 = []
-  | otherwise = [(x,y,z)| x <- [3..n], y <- [4..n], z <- [5..n], x^2 + y^2 == z^2, x <= y, y < z ]
+  | otherwise =  sortBy (compare `on` get3) [(x,y,z)| x <- [3..n], y <- [4..n], z <- [5..n], x^2 + y^2 == z^2, x <= y, y < z]
 --I need a way to reorder the list by the third element
 
 -- The next prime greater than n.
 nextPrime :: Integral a => a -> a
-nextPrime n = n
+nextPrime n
+ | n < 2 = 2
+ | otherwise = findNextPrime (n+1)
+
+findNextPrime :: Integral a => a -> a
+findNextPrime n
+ | isPrime n = n
+ | otherwise = findNextPrime (n+1)
+
+findNextPrimeEndOfList :: Integral a => [a] -> a
+findNextPrimeEndOfList x = findNextPrime (last x)
 
 -- A list of the first n primes.
 generatePrimes :: Integral a => a -> [a]
-generatePrimes n = []
+generatePrimes n
+ | n < 1 = []
+ | otherwise =  genericTake n [ p | p<-2:[3,5..], isPrime p]
+--I wanted to write something recursive like...
+--- |otherwise = generatePrimes(n-1) ++ findNextPrime (last generatePrimes(n-1))
+--Ask Bowers what the correct syntax for this recursive call would be
+
+-- | otherwise =  generatePrimes (n(-1)) ++ findNextPrimeEndOfList (generatePrimes (n-1))
 
 -- Helper function: a list of the first n primes larger than p.
 generateNprimesAfter :: Integral a => a -> a -> [a]
-generateNprimesAfter n m = []
+generateNprimesAfter n p
+ | n < 1 = []
+ | otherwise =  genericTake n [ m | m<-[(p+2),(p+4)..], isPrime m]
 --------------------------------------------------------------
 -- Tests: Use this code as is to make sure your PA is correct.
 testFactors =
@@ -111,11 +139,6 @@ testPerfectUpTo =
    perfectUpTo 27 == [6] &&
    perfectUpTo 28 == [6,28]
 
-testPythagoreans =
-   pythagoreans (-1) == [] &&
-   pythagoreans 5 == [(3,4,5)] &&
-   pythagoreans 20 == [(3,4,5),(6,8,10),(5,12,13),(9,12,15),(8,15,17),(12,16,20)]
-
 testNextPrime =
    nextPrime (-1) == 2 &&
    nextPrime 5 == 7 &&
@@ -126,6 +149,12 @@ testGeneratePrimes =
    generatePrimes 0 == [] &&
    generatePrimes 1 == [2] &&
    generatePrimes 15 == [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47]
+
+testPythagoreans =
+  pythagoreans (-1) == [] &&
+  pythagoreans 5 == [(3,4,5)] &&
+  pythagoreans 20 == [(3,4,5),(6,8,10),(5,12,13),(9,12,15),(8,15,17),(12,16,20)]
+
 
 test =
    testFactors &&

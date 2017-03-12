@@ -101,7 +101,7 @@ partitionMore v l = filter (>=v) l
 myQuickSort :: Ord a => [a] -> [a]
 myQuickSort (x:xs) = smallerSorted ++ [x] ++ largerSorted
   where
-  smallerSorted = myQuickSort (partitionLess x xs)
+  smallerSorted = myQuickSort $ partitionLess x xs
   largerSorted = myQuickSort (partitionMore x xs)
 myQuickSort [] = []
 
