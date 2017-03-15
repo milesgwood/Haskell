@@ -13,7 +13,7 @@ listOf4 :: a ->  a -> a -> a -> [a]
 listOf4 a b c d = [a,b,c,d]
 
 --This tacks an 8 on the front of a list with three elements
-listOf4With8 a b c = listOf4 8 a b c
+listOf4With8 = listOf4 8
 
 --Functions can be operations to be applied
 --The tyoe is assumed to be Integer -> Integer
@@ -24,7 +24,7 @@ double = (2*)
 doubleList [] = []
 doubleList (n:ns) = (double n):(doubleList ns)
 
---Applies some operation ot every function in a list
+--Applies some operation to every function in a list
 --The first param (a -> a) is a function
 --Second param is a list and
 --It returns a list

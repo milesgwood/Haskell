@@ -1,100 +1,57 @@
 -- mod10PA.hs -- Module 10 Haskell functions
--- Miles Greatwood
-
-import Data.Function (on)
-import Data.List (sortBy)
-import Data.List (genericTake)
+-- Prof. John C. Bowers
 
 -- A list of all factors of n.
---The second version of this is a recursive function.
 factors :: Integral a => a -> [a]
-factors n = [ allInts | allInts <- [1..n], n `mod` allInts  == 0]
---factors n = factoring n n
-
---Helper function for returning factors RECURSIVLEY
-factoring :: Integral a => a -> a -> [a]
-factoring n num
-  | n <=0 = []
-  | num `mod` n == 0 = (factoring (n-1) num) ++ [n]
-  | otherwise = factoring (n-1) num
---  | num `mod` n /= 0 = (factoring (n-1) num)
+factors n = [x | x<-[1..n], n `mod` x == 0]
 
 -- True iff n is prime.
 isPrime :: Integral a => a -> Bool
-isPrime n = length (factors n) == 2
+isPrime n = (factors n) == [1, n]
 
 -- A list of all prime factors of n.
 primeFactors :: Integral a => a -> [a]
-primeFactors n = [ myFactors | myFactors <- factors n, isPrime myFactors ]
+primeFactors n = filter isPrime (factors n)
 
 -- A list of primes up to n.
 primesUpTo :: Integral a => a -> [a]
-primesUpTo n = [primes | primes <-[2..n] ,isPrime primes]
+primesUpTo n = filter isPrime [2..n]
 
 -- True iff n is a perfect number.
 -- A number n is perfect if the sum of its factors is 2*n.
 isPerfect :: Integral a => a -> Bool
-isPerfect n
-  | n < 1 = False
-  |otherwise = ((sum (factors n)) == 2 * n)
+isPerfect 0 = False
+isPerfect n = (2*n) == sum (factors n)
 
 -- A list of all perfect numbers up to n.
 perfectUpTo :: Integral a => a -> [a]
-perfectUpTo n
-  | n < 6 = []
-  | otherwise = [p | p<-[6..n], isPerfect p ]
-
-get3 :: (a,b,c) -> c
-get3 (_,_,c) = c
+perfectUpTo n = filter isPerfect [6..n]
 
 -- A list of pythagorean triples.
--- A triple (x,y,z) is pythagorean if x^2+y^s = z^2.
---In this result, x <= y < z.
---I had to write a cutsom function to get the third part of the tuple for ordering
+-- A triple (x,y,z) is pythagorean if x^2+y^s = z^2. In this result, x <= y < z.
 pythagoreans :: Integral a => a -> [(a,a,a)]
-pythagoreans n
-  | n < 5 = []
-  | otherwise =  sortBy (compare `on` get3) [(x,y,z)| x <- [3..n], y <- [4..n], z <- [5..n], x^2 + y^2 == z^2, x <= y, y < z]
---I need a way to reorder the list by the third element
+pythagoreans n = [(x,y,z) | z<-[5..n],x<-[3..n],y<-[4..n],x*x+y*y==z*z, x<y]
 
 -- The next prime greater than n.
 nextPrime :: Integral a => a -> a
 nextPrime n
- | n < 2 = 2
- | otherwise = findNextPrime (n+1)
-
-findNextPrime :: Integral a => a -> a
-findNextPrime n
- | isPrime n = n
- | otherwise = findNextPrime (n+1)
-
-findNextPrimeEndOfList :: Integral a => [a] -> a
-findNextPrimeEndOfList x = findNextPrime (last x)
+  | isPrime (n+1) = (n+1)
+  | otherwise = nextPrime (n+1)
 
 -- A list of the first n primes.
 generatePrimes :: Integral a => a -> [a]
 generatePrimes n
- | n < 1 = []
- | otherwise =  genericTake n [ p | p<-2:[3,5..], isPrime p]
---I wanted to write something recursive like...
-
-recursiveGenPrimes :: Integral a => a -> [a]
-recursiveGenPrimes n
- | n < 1 = []
- | n == 1 = [2]
- |otherwise = (recursiveGenPrimes (n-1)) ++ [findNextPrime ((last $ recursiveGenPrimes (n-1)) + 1)]
-
-
+  | n <= 0 = []
+  | otherwise = generateNprimesAfter n 1
 
 -- Helper function: a list of the first n primes larger than p.
 generateNprimesAfter :: Integral a => a -> a -> [a]
-generateNprimesAfter n p
- | n < 1 = []
- | otherwise =  genericTake n [ m | m<-[(p+2),(p+4)..], isPrime m]
- --This may not work because it makes a list of primes but skips every other number because of my p+2 p+4
+generateNprimesAfter 0 _ = []
+generateNprimesAfter n a = p:(generateNprimesAfter (n-1) p) where p = nextPrime a
 
 --------------------------------------------------------------
 -- Tests: Use this code as is to make sure your PA is correct.
+
 testFactors =
    (factors (-8)) == [] &&
    (factors 0) == [] &&
@@ -144,6 +101,11 @@ testPerfectUpTo =
    perfectUpTo 27 == [6] &&
    perfectUpTo 28 == [6,28]
 
+testPythagoreans =
+   pythagoreans (-1) == [] &&
+   pythagoreans 5 == [(3,4,5)] &&
+   pythagoreans 20 == [(3,4,5),(6,8,10),(5,12,13),(9,12,15),(8,15,17),(12,16,20)]
+
 testNextPrime =
    nextPrime (-1) == 2 &&
    nextPrime 5 == 7 &&
@@ -154,12 +116,6 @@ testGeneratePrimes =
    generatePrimes 0 == [] &&
    generatePrimes 1 == [2] &&
    generatePrimes 15 == [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47]
-
-testPythagoreans =
-  pythagoreans (-1) == [] &&
-  pythagoreans 5 == [(3,4,5)] &&
-  pythagoreans 20 == [(3,4,5),(6,8,10),(5,12,13),(9,12,15),(8,15,17),(12,16,20)]
-
 
 test =
    testFactors &&
