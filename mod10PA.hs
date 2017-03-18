@@ -85,7 +85,6 @@ recursiveGenPrimes n
  |otherwise = (recursiveGenPrimes (n-1)) ++ [findNextPrime ((last $ recursiveGenPrimes (n-1)) + 1)]
 
 
-
 -- Helper function: a list of the first n primes larger than p.
 generateNprimesAfter :: Integral a => a -> a -> [a]
 generateNprimesAfter n p
