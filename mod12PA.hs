@@ -79,15 +79,27 @@ printList line = mapM_ putStrLn line
 main :: IO ()
 main = do
  input <-  getContents  --This grabs the input form stdIn.
- let listOfPoints = toPoints input --Contains a list of Points. It must be a let constant to work.
- putStrLn $ show $ head listOfPoints -- This prints the first point
- --From here on I have to focus on making the SVG file
+ let
+  pts = toPoints input --Contains a list of Points. It must be a let constant to work.
+  pairs = pairsFromPoints pts
+  hull = convexHullEdges pts
+  minX = (minimum $ map fst pts)
+  maxX = (maximum $ map fst pts)
+  minY = (minimum $ map snd pts)
+  maxY = (maximum $ map snd pts)
+  thickness = ((max (maxX - minX) (maxY - minY))/300)
+ putStrLn $ svgHeader minX maxX minY maxY
+ putStrLn $ svgLineSection minX maxX minY maxY thickness
+ putStrLn $ concat (map edgeToSVG hull)
+ putStrLn $ svgPointSection
+ putStrLn $ concat (map (pointToSVG (thickness * 1.5)) pts)
+ putStrLn $ svgFooter
 
 --My Tests written to work with my functions
 testToPoints :: Bool
 testToPoints =
   let actual = toPoints "(1.1,1.2) (2.1,2.2) (3.1,3.2)"
-  in  actual == [(1.1, 1.2),(2.1, 2.2),(3.1, 3.2)]
+  in  actual == [(1.1,1.2),(2.1,2.2),(3.1,3.2)]
 
 testPrintList = printList ["String1", "String2", "What", "Is", "Up"]
 
